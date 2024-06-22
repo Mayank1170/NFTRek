@@ -1,6 +1,23 @@
-import "@/styles/globals.css";
-import type { AppProps } from "next/app";
+import '../styles/globals.css'
+import type { AppProps } from 'next/app'
+import dynamic from 'next/dynamic';
+import Head from 'next/head';
+import WalletContextProvider from '../contexts/WalletContextProvider';
 
-export default function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
+const Navbar = dynamic(() => import('../components/Navbar'), { ssr: false });
+
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <>
+      <Head>
+        <title>My App</title>
+      </Head>
+      <WalletContextProvider>
+        <Navbar />
+        <Component {...pageProps} />
+      </WalletContextProvider>
+    </>
+  );
 }
+
+export default MyApp;

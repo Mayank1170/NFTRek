@@ -1,118 +1,148 @@
-import Image from "next/image";
-import { Inter } from "next/font/google";
+import React, { useRef, useEffect, useState } from "react";
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import Webcam from "react-webcam";
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import * as walletAdapterWallets from '@solana/wallet-adapter-wallets';
+import * as web3 from '@solana/web3.js';
+import { Result } from "postcss";
+require('@solana/wallet-adapter-react-ui/styles.css');
 
-const inter = Inter({ subsets: ["latin"] });
+const nftImageUrl = "https://nathan-galindo.vercel.app/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fimage-2.614ae0c9.jpg&w=640&q=75";
+const nftExternalUrl = "https://nathan-galindo.vercel.app/";
 
 export default function Home() {
+  const apiUrl = "https://devnet.helius-rpc.com/?api-key=3a8a143d-88a8-4293-a040-e8be7aa7248c";
+  const [imgSrc, setImgSrc] = useState<string>("");
+  const { connection } = useConnection();
+  const { publicKey } = useWallet();
+  const [isCameraOpen, setIsCameraOpen] = useState<boolean>(false);
+  const [imageClicked, setImageClicked] = useState<boolean>(false);
+  const webRef = useRef<any>(null);
+
+  const mintCompressedNft = async (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 'helius-fe-course',
+        method: 'mintCompressedNft',
+        params: {
+          name: "Nathan's Second cNFT",
+          symbol: 'NNFT',
+          owner: publicKey,
+          description:
+            "Nathan's Super cool NFT",
+          attributes: [
+            {
+              trait_type: 'Cool Factor',
+              value: 'Super',
+            },
+          ],
+          imageUrl: imgSrc,
+          externalUrl: nftExternalUrl,
+          sellerFeeBasisPoints: 6900,
+        },
+      })
+    });
+
+    const { result } = await response.json();
+    console.log("RESULT", result);
+
+    if (!result) {
+      alert("Request failed")
+      throw "Request failed"
+    }
+
+    setImgSrc(result.assetId);
+
+    fetchNFT(result.assetId, event);
+  };
+
+  const fetchNFT = async (assetId: string, event: { preventDefault: () => void }) => {
+    event.preventDefault();
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: 'my-id',
+          method: 'getAsset',
+          params: {
+            id: assetId
+          }
+        })
+      });
+
+      const jsonResponse = await response.json();
+      console.log("JSON Response:", jsonResponse);
+
+      if (jsonResponse.error) {
+        console.error("Error:", jsonResponse.error);
+        alert(`Failed to fetch NFT: ${jsonResponse.error.message}`);
+        return;
+      }
+
+      const { result } = jsonResponse;
+
+      if (result && result.content && result.content.links && result.content.links.image) {
+        // setImgSrc(result.content.links.image);
+      } else {
+        alert("Failed to fetch NFT image.");
+      }
+
+      return { result };
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const showImage = () => {
+    const screenshot = webRef.current.getScreenshot();
+    if (screenshot) {
+      setImgSrc(screenshot);
+      setImageClicked(true);
+      setIsCameraOpen(false);
+    } else {
+      alert("Failed to capture image.");
+    }
+  };
+
+  const openCamera = () => {
+    setIsCameraOpen(!isCameraOpen);
+    setImageClicked(false);
+  };
+
+  // useEffect(() => {
+  //   setApiUrl(
+  //     connection.rpcEndpoint.includes("devnet")
+  //       ? "https://devnet.helius-rpc.com/?api-key=fce0f723-9946-41ba-be98-6c30fe494e19"
+  //       : "https://mainnet.helius-rpc.com/?api-key=fce0f723-9946-41ba-be98-6c30fe494e19"
+  //   );
+  // }, [connection]);
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <main className="bg-black text-white min-h-screen p-4">
+      <section className="flex flex-col gap-y-4 justify-center items-center">
+        <div className="col-span-2 font-mono text-sm rounded-lg p-5 bg-zinc-800 w-full flex flex-col text-center items-center justify-center">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Welcome to Nft-checkin</h1>
         </div>
-      </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+        <button onClick={openCamera}>Click to open camera</button>
+        <div className="w-[25%]">
+          {isCameraOpen && <Webcam ref={webRef} />}
+        </div>
+        <button onClick={showImage}>Click image</button>
+        <button onClick={event => mintCompressedNft(event)}>Mint it</button>
+        {imageClicked && <img alt="clicked image" src={imgSrc} className="w-[25%] h-[240px]" />}
+      </section>
     </main>
   );
 }
