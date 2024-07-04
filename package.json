@@ -14,11 +14,17 @@
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/wallet-adapter-wallets": "^0.19.32",
     "@solana/web3.js": "^1.91.8",
+    "@tsparticles/engine": "^3.5.0",
+    "@tsparticles/react": "^3.0.0",
+    "@tsparticles/slim": "^3.5.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.2.12",
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18",
     "react-webcam": "^7.2.0",
     "rpc-websockets": "^7.5.0",
+    "tailwind-merge": "^2.3.0",
     "websocket": "^1.0.35"
   },
   "devDependencies": {
