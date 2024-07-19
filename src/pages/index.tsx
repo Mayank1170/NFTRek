@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useWallet } from '@solana/wallet-adapter-react';
-import { SparklesCore } from "@/components/ui/sparkles";
 import Webcam from "react-webcam";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 require('@solana/wallet-adapter-react-ui/styles.css');
@@ -15,10 +14,31 @@ export default function Home() {
   const [imageClicked, setImageClicked] = useState<boolean>(false);
   const webRef = useRef<any>(null);
   const [mounted, setMounted] = useState(false);
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
 
   useEffect(() => {
     setMounted(true);
+    if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
+      navigator.mediaDevices.enumerateDevices().then((devices) => {
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        setDevices(videoDevices);
+        if (videoDevices.length > 0) {
+          setSelectedDeviceId(videoDevices[0].deviceId);
+        }
+      }).catch((error) => {
+        console.error("Error enumerating devices:", error);
+        alert("Error accessing media devices.");
+      });
+    } else {
+      console.warn("navigator.mediaDevices.enumerateDevices not supported.");
+      alert("Your device does not support media device enumeration.");
+    }
   }, []);
+
+  const handleDeviceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedDeviceId(event.target.value);
+  };
 
   const getUserLocation = (): Promise<{ latitude: number, longitude: number }> => {
     return new Promise((resolve, reject) => {
@@ -71,7 +91,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           jsonrpc: '2.0',
-          id: 'helius-fe-course',
+          id: 'NFTRek',
           method: 'mintCompressedNft',
           params: {
             name: "NFTrek",
@@ -208,32 +228,48 @@ export default function Home() {
         }}
       ></div>
       <div className="col-span-2 font-mono text-sm rounded-lg p-5 w-full flex flex-col text-center items-center justify-center">
-            <div className="w-full flex flex-col items-center justify-center overflow-hidden rounded-md">
-              <h1 className="text-xl sm:text-2xl md:text-7xl font-bold text-center text-white relative z-20">
-                NFTRek
-              </h1>
-              <div className="w-[40rem] h-[20px] relative">
-                {/* Gradients */}
-                <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm" />
-                <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4" />
-                <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-1/4 blur-sm" />
-                <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px w-1/4" />
-                {/* Radial Gradient to prevent sharp edges */}
-                <div className="absolute inset-0 w-full h-full  [mask-image:radial-gradient(350px_200px_at_top,transparent_20%,white)]"></div>
-              </div>
-            </div>
+        <div className="w-full flex flex-col items-center justify-center overflow-hidden rounded-md">
+          <h1 className="text-xl sm:text-2xl md:text-7xl font-bold text-center text-white relative z-20">
+            NFTRek
+          </h1>
+          <div className="w-[40rem] h-[20px] relative">
+            {/* Gradients */}
+            <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm" />
+            <div className="absolute inset-x-20 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4" />
+            <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-1/4 blur-sm" />
+            <div className="absolute inset-x-60 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px w-1/4" />
+            {/* Radial Gradient to prevent sharp edges */}
+            <div className="absolute inset-0 w-full h-full  [mask-image:radial-gradient(350px_200px_at_top,transparent_20%,white)]"></div>
           </div>
-      {!publicKey ? (
+        </div>
+      </div>
+      {publicKey ? (
         <div className="flex items-center justify-center">
           <WalletMultiButton />
         </div>
       ) : (
         <section className="flex flex-col gap-y-4 justify-center items-center">
-          
           <button className="bg-blue-500 p-2 rounded-xl" onClick={openCamera}>Open camera</button>
-          <div className="w-[25%]">
-            {isCameraOpen && <Webcam ref={webRef} />}
-          </div>
+          {isCameraOpen && (
+            <>
+              {devices.length > 0 ? (
+                <>
+                  <select onChange={handleDeviceChange} value={selectedDeviceId} className="bg-gray-800 p-2 rounded-xl">
+                    {devices.map((device, index) => (
+                      <option key={device.deviceId} value={device.deviceId}>
+                        {device.label || `Camera ${index + 1}`}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="w-[25%]">
+                    <Webcam ref={webRef} videoConstraints={{ deviceId: selectedDeviceId }} />
+                  </div>
+                </>
+              ) : (
+                <div className="text-center">No video devices found</div>
+              )}
+            </>
+          )}
           <button onClick={showImage}>Click image</button>
           <button onClick={event => mintCompressedNft(event)}>Mint it</button>
           {imageClicked && <img alt="clicked image" src={imgSrc} className="w-[25%] h-[240px]" />}
