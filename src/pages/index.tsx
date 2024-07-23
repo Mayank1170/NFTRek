@@ -92,22 +92,14 @@ export default function Home() {
                 trait_type: 'Longitude',
                 value: longitude.toFixed(4),
               },
-              // {
-              //   trait_type: 'Elevation',
-              //   value: getSelection(latitude, longitude), // You'll need to implement this function
-              // },
               {
-                trait_type: 'Weather',
-                value: getCurrentWeather(cityName), // You'll need to implement this function
+                trait_type: 'Location',
+                value: cityName,
               },
-              {
-                trait_type: 'Trek Date',
-                value: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
-              }
             ],
             imageUrl: imgSrc,
-            externalUrl: `https://nftrek.com/treks/${cityName.toLowerCase().replace(/\s+/g, '-')}`,
-            sellerFeeBasisPoints: 500, // 5% royalty fee
+            externalUrl: 'https://nftrek.com/',
+            sellerFeeBasisPoints: 500,
           },
         })
       });
@@ -136,6 +128,7 @@ export default function Home() {
       alert("An error occurred while minting NFT.");
     }
   };
+
 
   const fetchNFT = async (assetId: string, event: { preventDefault: () => void }) => {
     event.preventDefault();
