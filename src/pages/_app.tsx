@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import WalletContextProvider from '../contexts/WalletContextProvider';
 
-const Navbar = dynamic(() => import('../components/Navbar'), { ssr: false });
+// const Navbar = dynamic(() => import('../components/Navbar'), { ssr: false });
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -13,7 +13,6 @@ function MyApp({ Component, pageProps }: AppProps) {
         <title>My App</title>
       </Head>
       <WalletContextProvider>
-        <Navbar />
         <Component {...pageProps} />
       </WalletContextProvider>
     </>
