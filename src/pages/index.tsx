@@ -98,7 +98,7 @@ export default function Home() {
               },
             ],
             imageUrl: imgSrc,
-            externalUrl: 'https://nftrek.com/',
+            externalUrl: 'https://nftrek.vercel.app/',
             sellerFeeBasisPoints: 500,
           },
         })
