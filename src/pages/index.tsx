@@ -64,45 +64,40 @@ export default function Home() {
       const { latitude, longitude } = await getUserLocation();
       const cityName = await getCityName(latitude, longitude);
       console.log(`Location: ${cityName} (${latitude}, ${longitude})`);
-
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 'nftrek-minting',
-          method: 'mintCompressedNft',
-          params: {
-            name: `NFTrek: ${cityName}`,
-            symbol: 'NFTRK',
-            owner: publicKey.toString(),
-            description: `This NFT represents your trek in ${cityName}. Captured and minted on-location!`,
-            attributes: [
-              {
-                trait_type: 'Location',
-                value: cityName,
-              },
-              {
-                trait_type: 'Latitude',
-                value: latitude.toFixed(4),
-              },
-              {
-                trait_type: 'Longitude',
-                value: longitude.toFixed(4),
-              },
-              {
-                trait_type: 'Location',
-                value: cityName,
-              },
-            ],
-            imageUrl: imgSrc,
-            externalUrl: 'https://nftrek.vercel.app/',
-            sellerFeeBasisPoints: 500,
-          },
+            jsonrpc: '2.0',
+            id: 'nftrek-minting',
+            method: 'mintCompressedNft',
+            params: {
+                name: `NFTrek: ${cityName}`,
+                symbol: 'NFTRek',
+                owner: publicKey.toString(),
+                description: `This NFT represents your trek in ${cityName}. Captured and minted on-location!`,
+                attributes: [
+                    {
+                        trait_type: 'Latitude',
+                        value: latitude.toFixed(4),
+                    },
+                    {
+                        trait_type: 'Longitude',
+                        value: longitude.toFixed(4),
+                    },
+                    {
+                        trait_type: 'Location',
+                        value: cityName,
+                    }],
+                imageUrl: imgSrc,
+                externalUrl: 'https://nftrek.vercel.app/',
+                sellerFeeBasisPoints: 6900,
+            },
         })
-      });
+    });
+    
 
       const jsonResponse = await response.json();
       console.log("JSON Response:", jsonResponse);

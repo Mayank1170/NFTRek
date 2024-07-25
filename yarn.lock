@@ -2363,7 +2363,7 @@
     "@wallet-standard/core" "^1.0.3"
     js-base64 "^3.7.5"
 
-"@solana-mobile/wallet-adapter-mobile@^2.0.0":
+"@solana-mobile/wallet-adapter-mobile@^2.0.0", "@solana-mobile/wallet-adapter-mobile@^2.1.3":
   version "2.1.3"
   resolved "https://registry.npmjs.org/@solana-mobile/wallet-adapter-mobile/-/wallet-adapter-mobile-2.1.3.tgz"
   integrity sha512-V9gxV7/F1BLode6I+j134kFvQv1mnF0OlN+tYPHEmJOcH4caDfH6rlJy7t9Pktkl9ZEVTO9kT8K19Y4MRl6nxg==
