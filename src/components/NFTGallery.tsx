@@ -187,7 +187,7 @@ const NFTGallery: React.FC = () => {
           <p className={`text-black font-black mb-4 ${isMobile ? 'text-base' : 'text-lg'}`} style={{
             fontFamily: '"Comic Sans MS", cursive'
           }}>
-            D'oh! {error}
+            D&apos;oh! {error}
           </p>
           <button
             onClick={fetchUserNFTs}
